@@ -1,0 +1,3 @@
+dbpath= D:\xgvuetest\px\mongodb\mddata
+logpath= D:\xgvuetest\px\mongodb\mdlog.log
+serviceName=mongodb
