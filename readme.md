@@ -1,11 +1,12 @@
 ## mongodb 基本操作（以管理员权限操作）
 
-- mongod -dbpath "D:\zhufeng\mongo\mddata" -logpath "D:\zhufeng\mongo\mdlog.log"       -logappend  -install -serviceName "mongodb"     添加服务
+- mongod -dbpath "D:\zhufeng\mongo\mddata" -logpath "D:\zhufeng\mongo\mdlog.log" -logappend  -install -serviceName "mongodb"     添加服务
 - mongod -config "D:\zhufeng\mongo\config.txt" -logappend  -install -serviceName "mongodb"  使用配置文件添加服务,(将配置项放到config.txt)
 - sc delete mongodb   删除服务--mongodb 服务名称，在添加服务的时候serviceName定义的
 - net start mongodb  命令启动服务--mongodb 服务名称，在添加服务的时候serviceName定义的
 - net stop mongodb  命令停止服务  --mongodb 服务名称，在添加服务的时候serviceName定义的
 - mongod --dbpath=./mddata 启动服务 （手动）
+- mongod --dbpath=./mddata --auth  启动服务（手动-有权限限制）
 - mongo 链接服务器（手动,------链接完成后才可以操作数据库）
 - 备注：还有一种启动服务的方式---图三
 
@@ -15,6 +16,8 @@
 - use school // 切换到school
 - load("./js/insert.js"); // 将insert.js的数据导入到数据库
 - db.school.find()   // 查看数据库数据
+- db.school.drop()   // 清空数据库
+- db.runCommand({distinct:"stentens",key"home"});// 查找数据表stentens的key的唯一值（去重，查找不重复的值）distinct：唯一
 
 
 // 在断开 数据库后(执行Ctrl+C) 执行 ，使用mongoexport  mongoimport工具
@@ -44,3 +47,10 @@
   reles:权限数组
        db:本权限针对哪个数据库
        role:对本数据库所拥有的权限
+
+- show users 查看数据权限
+
+
+## runCommand 常用命令
+db.runCommand({buildInfo:1}); // 获取构建信息
+db.runCommand({getLastError:"stendens"}); // 获取最近一次错误
