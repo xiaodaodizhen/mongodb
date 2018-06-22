@@ -15,7 +15,8 @@
 // 在链接数据库成功（执行mongo）后的当前数据库中执行
 - use school // 切换到school
 - load("./js/insert.js"); // 将insert.js的数据导入到数据库
-- db.school.find()   // 查看数据库数据
+- db.school.find()   // 查看数据库数据 
+- db.school.find({name:'xx'});  // 如果有参数，是查询某一个数据
 - db.school.drop()   // 清空数据库
 - db.runCommand({distinct:"stentens",key"home"});// 查找数据表stentens的key的唯一值（去重，查找不重复的值）distinct：唯一
 
@@ -54,3 +55,74 @@
 ## runCommand 常用命令
 db.runCommand({buildInfo:1}); // 获取构建信息
 db.runCommand({getLastError:"stendens"}); // 获取最近一次错误
+
+
+## 固定集合---占用完后按插入顺序先后在重新覆盖
+- 没有索引
+- 速度快，不需要重新分配空间
+- 适合日志储存
+
+## 创建固定集合
+- size: 集合空间大小（单位kb），  max:集合最大放多少个（文档）数据， capped：是否封顶设置上限
+- db.createCollection("logs",{size:5,max:5,capped:true});
+
+## 创建普通集合
+- db.createCollection("logs"); // 与固定集合方法一样，只是参数不同
+
+## 普通集合转为固定集合
+- db.runCommant({converToCapped:"普通集合名称",size:5});
+
+
+## GridFiles-mongofiles 工具（解决大文件上传，比如视频和高清图片,文件，可以将一个大文件分割成为多个较小的文档，这样的机制允许我们有效的保存大文件对象）
+- myfiles 数据库名称  bigFile.txt 上传的文件
+- mongofiles 包含链接服务的功能（不能在mongo 链接服务成功的情况下使用），上传完成后会自动断开链接
+- mongofiles -d myfiles put bigFile.txt  // 将bigFile.txt 文件上传到myfiles数据库中
+- mongofiles -d myfiles get bigFile.txt // 将bigFile.txt 文件从myfiles数据库中获取会来
+- mongofiles -d myfiles list // 获取myfiles 数据表中存的文件
+- mongofiles -d myfiles delete bigFile.txt // 删除数据
+
+
+## 索引
+- db.score.ensureIndex({key:1||-1 升降序,{name:"索引名字没设置则用默认",unique:ture ||false是否是唯一索引  , dorpDups:true||false 如果在设置唯一索引前，已经有索引值对应的值重复，设置本项为true,丢弃重复项，此属性危险慎用,background:true 是否在后台创建索引，不影响继续操作}});
+- db.score.ensureIndex({age:1});    //创建索引 score数据表名字  字段为age  值为1 是升序
+- db.score.getIndexes(); // 查看现有的索引
+
+查看索引结果
+[
+  { -----------------------数据生成自带
+    "v":2,
+    "key":{
+      "_id":1
+    },
+    "name":"_id_",
+    "ns":"score.score"
+  },
+  {--------------------------自己创建
+    "v":1,
+    "key":{
+      "age":1   ---------------------索引key  值为 1 升序  -1 降序
+    },
+    "name":"age_1", ----------------- 索引名字,默认，如果db.score.ensureIndex({age:1},{name:"ageIndex"});创建的时候，设定了name属性就使用设定的，没有定就用默认的
+    "ns":"score.score"
+  },
+
+]
+
+
+- db.score.dropIndex("age_1");   // 删除索引--------- age_1  是需要删除索引的名字，索引的name属性
+
+#### 多键索引---基于一个数组创建索引，索引就是数组
+db.moreData.insert({hobby:["A","B","C"]});
+db.moreData.ensureIndex({hobby:1});
+db.moreData.find({hobby:"A"},{hobby:1,_id:0}).explain(true);
+
+
+#### 过期索引
+
+
+
+
+
+
+
+mongod -dbpath "D:\xgvuetest\px\mongodb\mddata" -logpath "D:\xgvuetest\px\mongodb\mdlog.log" -logappend  -install -serviceName "mongodb"
