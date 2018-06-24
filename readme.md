@@ -119,10 +119,38 @@ db.moreData.find({hobby:"A"},{hobby:1,_id:0}).explain(true);
 
 #### 过期索引
 
+ - 在一定的时间后会过期，过期后相应的数据会被删除，比如session  日志 缓存  临时文件
+ - 1. 索引字段的值必须是Date对象，不能是其他类型比如时间戳
+ - 2. 删除时间不精确，每60秒跑一次，删除也要时间，所以后误差
+
+   db.logs.insert({time:new Date()});
+   db.logs.ensureIndex({time:1},{expireAfterSeconds:10});// expireAfterSeconds 设置索引存在时常，即便是设置10秒，也是按60秒更新，因为他是每60秒更新一次，过期自动删除数据
+   db.logs.find();
+
+
+#### 全文索引
+ - $text: 表示要进行全文检索
+ - $search: 表示要查找的内容，默认全部匹配
+
+ db.arts.insert({con:"i am girl"});
+ db.arts.insert({con:"i am boy"});
+ db.arts.insert({con:"i am girl boy"});
+ db.arts.ensureIndex({con:"text"});// 告诉索引字段con，他的索引类型是 text文本
+ db.arts.find({$text:{$search:"boy"}}); // 查找有boy关键字的文档数据
+
+ db.arts.find({$text:{$search:"boy gril"}}); //  boy gril 是或的关系
+ db.arts.find({$text:{$search:"\"boy\"\"gril\""}}); // boy gril 是 与的关系  （多个关键之用""包含，并且用转义符转义）
+ db.arts.find({$text:{$search:"\"boy\"\"gril\"-wangwu"}});// -wangwu 是排除 ，并且包含-wangwu的双引号不需要转义符转义
+ 
+ db.arts.find({$text:{$search:"boy -gril"}});//-girl 是排除
+
+#### 二维索引---提供了强大的空间索引，可以查询出一定范围内的地理坐标
+- db.map.ensureIndex({"gis":"2d"},{min"-1,max:201});
+- db.map.find({"gis":{$near:[70,180]}}).limit(3); //查询点（70,180）最近的三个点
+- db.map.find({"gis":{$within:{$box:[[50,50],[190,190]]}}}); // 查询以（50，50）和(90,90)为对角线的正方形的所有点
+
+- db.map.find({"gis":{$within:{$center:[[50,50],60}}}); //查询出以圆心(50,50)，半径60的园中的点
 
 
 
-
-
-
-mongod -dbpath "D:\xgvuetest\px\mongodb\mddata" -logpath "D:\xgvuetest\px\mongodb\mdlog.log" -logappend  -install -serviceName "mongodb"
+#--------------------（运维相关知识--主从服务器--ms文件夹下）-------------------------------
